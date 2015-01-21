@@ -10,6 +10,9 @@ import Control.Monad (mapM)
 import Data.Maybe (fromMaybe)
 
 
+pureStrategies :: Normal mv -> PlayerID -> [mv]
+pureStrategies (Normal _ mvs _) p = forPlayer p mvs
+
 dominantStrategies :: (Eq mv) => Normal mv -> PlayerID -> [mv]
 dominantStrategies g@(Normal np mvs os) p = filter (dominant g p) strategies
     where
