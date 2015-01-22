@@ -1,14 +1,26 @@
-name:                Hagl-more
-version:             0.0.1
-synopsis:            Additional functionality on top of Hagl, a DSL for experimental game theory.
-license:             PublicDomain
-author:              Paavo Parkkinen
-maintainer:          pparkkin@gmail.com
-category:            Game Theory
-build-type:          Simple
-cabal-version:       >=1.8
+name:              Hagl-more
+version:           0.0.1
+synopsis:          Additional functionality on top of Hagl, a DSL for experimental game theory.
+license:           PublicDomain
+author:            Paavo Parkkinen
+maintainer:        pparkkin@gmail.com
+category:          Game Theory
+build-type:        Simple
+cabal-version:     >=1.8
 
 library
-  exposed-modules:     Hagl.More
-  build-depends:       base
-                     , Hagl
+  hs-source-dirs:  src
+  exposed-modules: Hagl.More
+  build-depends:   base
+                 , Hagl
+
+Test-Suite tests
+  type:            exitcode-stdio-1.0
+  main-is:         Main.hs
+  hs-source-dirs:  test
+  build-depends:   base
+                 , HUnit
+                 , test-framework
+                 , test-framework-hunit
+                 , Hagl
+                 , Hagl-more

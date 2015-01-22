@@ -9,9 +9,21 @@ import Data.List (delete)
 import Control.Monad (mapM)
 import Data.Maybe (fromMaybe)
 
+class PureStrategies g where
+    pureStrategies :: g mv -> PlayerID -> [[mv]]
 
-pureStrategies :: Normal mv -> PlayerID -> [mv]
-pureStrategies (Normal _ mvs _) p = forPlayer p mvs
+--instance PureStrategies Discrete where
+--    pureStrategies (Discrete n es) p = case n of
+--                                         (_, Decision p') -> collectEdges es (p' == p)
+--                                         _ -> []
+--        where
+--          collectEdges :: [Edge s mv] -> Bool -> [[mv]]
+--          collectEdges es True = concatMap (\(mv, t) ->
+--                                                map (mv :) (pureStrategies t p)) es
+--          collectEdges es False = concatMap (\(_, t) -> pureStrategies t p) es
+
+instance PureStrategies Normal where
+    pureStrategies (Normal _ mvs _) p = map (:[]) $ forPlayer p mvs
 
 dominantStrategies :: (Eq mv) => Normal mv -> PlayerID -> [mv]
 dominantStrategies g@(Normal np mvs os) p = filter (dominant g p) strategies
