@@ -26,13 +26,15 @@ class PureStrategies g where
 instance PureStrategies Normal where
     pureStrategies (Normal _ mvs _) p = map (:[]) $ forPlayer p mvs
 
+-- |Return a list of the dominant strategies for a player in a normal form game
 dominantStrategies :: (Eq mv) => Normal mv -> PlayerID -> [mv]
-dominantStrategies g@(Normal np mvs os) p = filter (dominant g p) strategies
+dominantStrategies g@(Normal np mvs os) p = filter (dominantStrategy g p) strategies
     where
       strategies = forPlayer p mvs
 
-dominant :: (Eq mv) => Normal mv -> PlayerID -> mv -> Bool
-dominant g@(Normal np mvs os) p m = if not $ isMoveValid g p m
+-- |Check whether or not the given strategy is a dominant strategy for the given player in a normal form game
+dominantStrategy :: (Eq mv) => Normal mv -> PlayerID -> mv -> Bool
+dominantStrategy g@(Normal np mvs os) p m = if not $ isMoveValid g p m
                                     then False
                                     else dominatesAll si sis
     where
