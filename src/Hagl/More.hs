@@ -11,6 +11,7 @@ import Control.Monad (mapM)
 import Data.Maybe (fromMaybe)
 
 class PureStrategies g where
+    -- |Return the list of pure strategies for a player
     pureStrategies :: g mv -> PlayerID -> [[mv]]
 
 --instance PureStrategies Discrete where
@@ -24,6 +25,7 @@ class PureStrategies g where
 --          collectEdges es False = concatMap (\(_, t) -> pureStrategies t p) es
 
 instance PureStrategies Normal where
+    -- |Return the list of pure strategies for a player in a normal form game
     pureStrategies (Normal _ mvs _) p = map (:[]) $ forPlayer p mvs
 
 -- |Return a list of the dominant strategies for a player in a normal form game
