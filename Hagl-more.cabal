@@ -24,3 +24,4 @@ Test-Suite tests
                  , test-framework-hunit
                  , Hagl
                  , Hagl-more
+

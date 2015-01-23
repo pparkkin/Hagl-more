@@ -1,7 +1,8 @@
 
 module Hagl.More
     ( dominant
-    , dominantStrategies )
+    , dominantStrategies
+    , pureStrategies )
 where
 
 import Hagl

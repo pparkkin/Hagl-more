@@ -8,7 +8,21 @@ import Hagl
 import Hagl.More
 
 haglMoreTests = [
-   testCase "Dominant strategies in prisoners' dilemma for player 1" testPDDSP1
+   testCase "Pure strategies in prisoners' dilemma for player 1" testPDPSP1
+ , testCase "Pure strategies in prisoners' dilemma for player 2" testPDPSP2
+ , testCase "Pure strategies in matching pennies for player 1" testMPPSP1
+ , testCase "Pure strategies in matching pennies for player 2" testMPPSP2
+ , testCase "Pure strategies in cooperation game for player 1" testCGPSP1
+ , testCase "Pure strategies in cooperation game for player 2" testCGPSP2
+ , testCase "Pure strategies in battle of the sexes for player 1" testBSPSP1
+ , testCase "Pure strategies in battle of the sexes for player 2" testBSPSP2
+ , testCase "Pure strategies in dominance for player 1" testDPSP1
+ , testCase "Pure strategies in dominance for player 2" testDPSP2
+ , testCase "Pure strategies in voting for player 1" testVPSP1
+ , testCase "Pure strategies in voting for player 2" testVPSP2
+ , testCase "Pure strategies in voting for player 2" testVPSP3
+
+ , testCase "Dominant strategies in prisoners' dilemma for player 1" testPDDSP1
  , testCase "Dominant strategies in prisoners' dilemma for player 2" testPDDSP2
  , testCase "Dominant strategies in matching pennies for player 1" testMPDSP1
  , testCase "Dominant strategies in matching pennies for player 2" testMPDSP2
@@ -22,6 +36,20 @@ haglMoreTests = [
  , testCase "Dominant strategies in voting for player 2" testVDSP2
  , testCase "Dominant strategies in voting for player 3" testVDSP3
  ]
+
+testPDPSP1 = [[Cooperate], [Defect]] @=? (pureStrategies prisonersDilemma 1)
+testPDPSP2 = [[Cooperate], [Defect]] @=? (pureStrategies prisonersDilemma 2)
+testMPPSP1 = [[Heads], [Tails]] @=? (pureStrategies matchingPennies 1)
+testMPPSP2 = [[Heads], [Tails]] @=? (pureStrategies matchingPennies 2)
+testCGPSP1 = [[LeftSide], [RightSide]] @=? (pureStrategies cooperationGame 1)
+testCGPSP2 = [[LeftSide], [RightSide]] @=? (pureStrategies cooperationGame 2)
+testBSPSP1 = [[Football], [Opera]] @=? (pureStrategies battleOfTheSexes 1)
+testBSPSP2 = [[Football], [Opera]] @=? (pureStrategies battleOfTheSexes 2)
+testDPSP1 = [[A], [B], [C], [D]] @=? (pureStrategies dominance 1)
+testDPSP2 = [[X], [Y], [Z]] @=? (pureStrategies dominance 2)
+testVPSP1 = [[V], [O]] @=? (pureStrategies voting 1)
+testVPSP2 = [[V], [O]] @=? (pureStrategies voting 2)
+testVPSP3 = [[V], [O]] @=? (pureStrategies voting 3)
 
 testPDDSP1 = [Defect] @=? (dominantStrategies prisonersDilemma 1)
 testPDDSP2 = [Defect] @=? (dominantStrategies prisonersDilemma 2)
