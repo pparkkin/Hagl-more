@@ -1,6 +1,6 @@
 
 module Hagl.More
-    ( dominant
+    ( dominantStrategy
     , dominantStrategies
     , pureStrategies )
 where
@@ -14,15 +14,16 @@ class PureStrategies g where
     -- |Return the list of pure strategies for a player
     pureStrategies :: g mv -> PlayerID -> [[mv]]
 
---instance PureStrategies Discrete where
---    pureStrategies (Discrete n es) p = case n of
---                                         (_, Decision p') -> collectEdges es (p' == p)
---                                         _ -> []
---        where
---          collectEdges :: [Edge s mv] -> Bool -> [[mv]]
---          collectEdges es True = concatMap (\(mv, t) ->
---                                                map (mv :) (pureStrategies t p)) es
---          collectEdges es False = concatMap (\(_, t) -> pureStrategies t p) es
+instance PureStrategies (Discrete d) where
+    -- |Return the list of pure strategied for a player in a extended form game
+    pureStrategies (Discrete n es) p = case n of
+                                         (_, Decision p') -> collectEdges es (p' == p)
+                                         _ -> []
+        where
+          collectEdges :: [Edge s mv] -> Bool -> [[mv]]
+          collectEdges es True = concatMap (\(mv, t) ->
+                                                map (mv :) (pureStrategies t p)) es
+          collectEdges es False = concatMap (\(_, t) -> pureStrategies t p) es
 
 instance PureStrategies Normal where
     -- |Return the list of pure strategies for a player in a normal form game
