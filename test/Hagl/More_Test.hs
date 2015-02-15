@@ -35,6 +35,11 @@ haglMoreTests = [
  , testCase "Dominant strategies in voting for player 1" testVDSP1
  , testCase "Dominant strategies in voting for player 2" testVDSP2
  , testCase "Dominant strategies in voting for player 3" testVDSP3
+
+ , testCase "Pure strategies in revolution for player 1" testRPSP1
+ , testCase "Pure strategies in revolution for player 2" testRPSP2
+ , testCase "Pure strategies in oversight for player 1" testOPSP1
+ , testCase "Pure strategies in oversight for player 2" testOPSP2
  ]
 
 testPDPSP1 = [[Cooperate], [Defect]] @=? (pureStrategies prisonersDilemma 1)
@@ -64,6 +69,18 @@ testDDSP2 = [Y] @=? (dominantStrategies dominance 2)
 testVDSP1 = [V] @=? (dominantStrategies voting 1)
 testVDSP2 = [O] @=? (dominantStrategies voting 2)
 testVDSP3 = [O] @=? (dominantStrategies voting 3)
+
+testRPSP1 = [["Revolt", "Consent"]] @=? (pureStrategies revolution 1)
+testRPSP2 = [["Grant independence", "Tax"],
+             ["Grant independence", "Eliminate tax"],
+             ["Suppress revolution", "Tax"],
+             ["Suppress revolution", "Eliminate tax"]] @=? (pureStrategies revolution 2)
+testOPSP1 = [["High regulatory enforcement"],
+             ["Low regulatory enforcement"]] @=? (pureStrategies oversight 1)
+testOPSP2 = [["Oversight", "Oversight"],
+             ["Oversight", "No oversight"],
+             ["No oversight", "Oversight"],
+             ["No oversight", "No oversight"]] @=? (pureStrategies oversight 2)
 
 -- Some Test Games
 
@@ -112,6 +129,59 @@ voting = normal 3 [[V, O], [V, O], [V, O]]
                    [1, 0, 0], [0, 1, 1],
                    [1, 0, 0], [0, 1, 1],
                    [0, 1, 1], [0, 1, 1]]
+
+revolution :: Extensive String
+revolution = start
+    where
+      -- A is a colony controlled by B.
+      a = player 1
+      -- Country B generates revenue from control of A’s oil fields and from
+      -- direct taxes on A’s residents.
+      b = player 2
+
+      -- In the event of war, A wins with probability p.
+      aWins = 2
+      bWins = 3
+
+      rg = pays [3, 0]
+      rs = chance
+           [(aWins, "A wins war"), (bWins, "B wins war")]
+           [("A wins war", pays [4 - 6, -6]), ("B wins war", pays [-6 - 2, 6 - 6])]
+      ct = pays [-2, 6]
+      ce = pays [0, 4]
+
+      start = a ("Revolt", bGrantOrSuppress)
+              <|> ("Consent", bTaxOrEliminateTax)
+
+      bGrantOrSuppress = b ("Grant independence", rg)
+                         <|> ("Suppress revolution", rs)
+
+      bTaxOrEliminateTax = b ("Tax", ct)
+                           <|> ("Eliminate tax", ce)
+
+oversight :: Extensive String
+oversight = start
+    where
+      b = player 1 -- bureaucrat
+      p = player 2 -- politician
+
+      c = 2 -- enforcement cost
+      k = 1/2 -- oversight cost
+      f = 4 -- penalty
+
+      ho = pays [-c, 1-k] -- high enforcement/oversight
+      hn = pays [-c, 1] -- high enforcement/no oversight
+      lo = pays [-f-c, 1-k] -- low enforcement/oversight
+      ln = pays [0, 0] -- low enforcement/no oversight
+
+      start = b ("High regulatory enforcement", pH)
+              <|> ("Low regulatory enforcement", pL)
+
+      pH = p ("Oversight", ho)
+           <|> ("No oversight", hn)
+
+      pL = p ("Oversight", lo)
+           <|> ("No oversight", ln)
 
 -- Helper
 normalGame :: [mv] -> [[Float]] -> Normal mv
