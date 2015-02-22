@@ -21,7 +21,7 @@ class PureStrategies g where
 
 instance PureStrategies (Discrete d) where
     -- |Return the list of pure strategied for a player in a extended form game
-    pureStrategies g p = filter (not . null) $ mapExtensive (movesForPlayer p) g
+    pureStrategies g p = sequence $ filter (not . null) $ mapExtensive (movesForPlayer p) g
         where
             movesForPlayer :: PlayerID -> ((Node d mv), [mv]) -> [mv]
             movesForPlayer p (n, mvs) = case n of

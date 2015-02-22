@@ -70,17 +70,17 @@ testVDSP1 = [V] @=? (dominantStrategies voting 1)
 testVDSP2 = [O] @=? (dominantStrategies voting 2)
 testVDSP3 = [O] @=? (dominantStrategies voting 3)
 
-testRPSP1 = [["Revolt", "Consent"]] @=? (pureStrategies revolution 1)
-testRPSP2 = [["Grant independence", "Tax"],
-             ["Grant independence", "Eliminate tax"],
-             ["Suppress revolution", "Tax"],
-             ["Suppress revolution", "Eliminate tax"]] @=? (pureStrategies revolution 2)
-testOPSP1 = [["High regulatory enforcement"],
-             ["Low regulatory enforcement"]] @=? (pureStrategies oversight 1)
-testOPSP2 = [["Oversight", "Oversight"],
-             ["Oversight", "No oversight"],
-             ["No oversight", "Oversight"],
-             ["No oversight", "No oversight"]] @=? (pureStrategies oversight 2)
+testRPSP1 = [["Consent"],["Revolt"]] @=? (pureStrategies revolution 1)
+testRPSP2 = [["Eliminate tax","Suppress revolution"],
+             ["Eliminate tax","Grant independence"],
+             ["Tax","Suppress revolution"],
+             ["Tax","Grant independence"]] @=? (pureStrategies revolution 2)
+testOPSP1 = [["Low regulatory enforcement"],
+             ["High regulatory enforcement"]] @=? (pureStrategies oversight 1)
+testOPSP2 = [["No oversight","No oversight"],
+             ["No oversight","Oversight"],
+             ["Oversight","No oversight"],
+             ["Oversight","Oversight"]] @=? (pureStrategies oversight 2)
 
 -- Some Test Games
 
