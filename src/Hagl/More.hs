@@ -10,20 +10,23 @@ import Data.List (delete)
 import Control.Monad (mapM)
 import Data.Maybe (fromMaybe)
 
+mapExtensive :: (((Node d mv), [mv]) -> a) -> Discrete d mv -> [a]
+mapExtensive f (Discrete n es) = f (n, mvs) : concatMap ((mapExtensive f) . snd) es
+    where
+        mvs = map fst es
+
 class PureStrategies g where
     -- |Return the list of pure strategies for a player
     pureStrategies :: g mv -> PlayerID -> [[mv]]
 
 instance PureStrategies (Discrete d) where
     -- |Return the list of pure strategied for a player in a extended form game
-    pureStrategies (Discrete n es) p = case n of
-                                         (_, Decision p') -> collectEdges es (p' == p)
-                                         _ -> []
+    pureStrategies g p = filter (not . null) $ mapExtensive (movesForPlayer p) g
         where
-          collectEdges :: [Edge s mv] -> Bool -> [[mv]]
-          collectEdges es True = concatMap (\(mv, t) ->
-                                                map (mv :) (pureStrategies t p)) es
-          collectEdges es False = concatMap (\(_, t) -> pureStrategies t p) es
+            movesForPlayer :: PlayerID -> ((Node d mv), [mv]) -> [mv]
+            movesForPlayer p (n, mvs) = case n of
+                (_, Decision p') | p == p' -> mvs
+                _ -> []
 
 instance PureStrategies Normal where
     -- |Return the list of pure strategies for a player in a normal form game
