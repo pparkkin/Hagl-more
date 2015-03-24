@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeFamilies #-}
 
 module Hagl.More
     ( dominantStrategy
@@ -16,10 +17,12 @@ mapExtensive f (Discrete n es) = f (n, mvs) : concatMap ((mapExtensive f) . snd)
         mvs = map fst es
 
 class PureStrategies g where
+    type Strat mv
     -- |Return the list of pure strategies for a player
-    pureStrategies :: g mv -> PlayerID -> [[mv]]
+    pureStrategies :: g mv -> PlayerID -> Strat mv
 
 instance PureStrategies (Discrete d) where
+    type Strat mv = [[mv]]
     -- |Return the list of pure strategied for a player in a extended form game
     pureStrategies g p = sequence $ filter (not . null) $ mapExtensive (movesForPlayer p) g
         where
@@ -29,6 +32,7 @@ instance PureStrategies (Discrete d) where
                 _ -> []
 
 instance PureStrategies Normal where
+    type Strat mv = [[mv]]
     -- |Return the list of pure strategies for a player in a normal form game
     pureStrategies (Normal _ mvs _) p = map (:[]) $ forPlayer p mvs
 
