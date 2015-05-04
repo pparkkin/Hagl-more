@@ -36,11 +36,18 @@ instance PureStrategies Normal where
     -- |Return the list of pure strategies for a player in a normal form game
     pureStrategies (Normal _ mvs _) p = map (:[]) $ forPlayer p mvs
 
--- |Return a list of the dominant strategies for a player in a normal form game
-dominantStrategies :: (Eq mv) => Normal mv -> PlayerID -> [mv]
-dominantStrategies g@(Normal np mvs os) p = filter (dominantStrategy g p) strategies
-    where
-      strategies = forPlayer p mvs
+
+class DominantStrategies g where
+    type DStrats mv
+    -- |Return dominant strategies for player
+    dominantStrategies :: (Eq mv) => g mv -> PlayerID -> DStrats mv
+
+instance DominantStrategies Normal where
+    type DStrats mv = [mv]
+    -- |Return a list of the dominant strategies for a player in a normal form game
+    dominantStrategies g@(Normal np mvs os) p = filter (dominantStrategy g p) strategies
+        where
+          strategies = forPlayer p mvs
 
 -- |Check whether or not the given strategy is a dominant strategy for the given player in a normal form game
 dominantStrategy :: (Eq mv) => Normal mv -> PlayerID -> mv -> Bool
