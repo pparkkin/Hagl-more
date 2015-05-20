@@ -2,6 +2,7 @@
 # TODO
 
 - Move classes to separate files
+- Graphviz visualization of Extensive form games
 
 ## Pure Strategies
 
