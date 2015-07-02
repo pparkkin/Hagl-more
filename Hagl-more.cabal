@@ -11,8 +11,11 @@ cabal-version:     >=1.8
 library
   hs-source-dirs:  src
   exposed-modules: Hagl.More
+                 , Hagl.More.Vis
   build-depends:   base
+                 , MissingH
                  , Hagl
+                 , graphviz
 
 Test-Suite tests
   type:            exitcode-stdio-1.0
