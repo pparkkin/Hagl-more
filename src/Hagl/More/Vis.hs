@@ -1,7 +1,8 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+
 module Hagl.More.Vis where
 
 import Data.Maybe (fromMaybe)
-import Data.List.Utils (flipAL)
 
 import Hagl
 
@@ -16,8 +17,8 @@ import Hagl.Examples.Crisis
 extensiveNodes :: Extensive mv -> [Extensive mv]
 extensiveNodes = bfs
 
-zipWithIndex :: [a] -> [(Int, a)]
-zipWithIndex = zip [0..]
+zipWithIndex :: [a] -> [(a, Int)]
+zipWithIndex = (`zip` [0..])
 
 extensiveEdge :: Extensive mv -> ExtEdge mv -> (Extensive mv, Extensive mv)
 extensiveEdge n (_, n') = (n, n')
@@ -26,28 +27,45 @@ extensiveEdges :: Extensive mv -> [(Extensive mv, Extensive mv)]
 extensiveEdges (Discrete _ []) = []
 extensiveEdges n@(Discrete a es) = map (n `extensiveEdge`) es
 
-nodesFrom :: (Eq mv) => [(Int, Extensive mv)] -> (Int, Extensive mv) -> [(Int, Extensive mv)]
-nodesFrom _ (_, (Discrete _ [])) = []
-nodesFrom nis (_, (Discrete _ es)) = map (index . snd) es
+nodesFrom :: forall mv . (Eq mv) => [(Extensive mv, Int)] -> (Extensive mv, Int) -> [(Extensive mv, Int)]
+nodesFrom _ ((Discrete _ []), _) = []
+nodesFrom nis ((Discrete _ es), _) = map (index . snd) es
     where
-        index n = (head $ fromMaybe [-1] $ lookup n $ flipAL nis, n)
+        index :: Extensive mv -> (Extensive mv, Int)
+        index n = (n, fromMaybe (-1) (lookup n nis))
 
-nodeId :: (Int, Extensive mv) -> String
-nodeId = show . fst
+nodeId :: (Extensive mv, Int) -> String
+nodeId = show . snd
 
-makeNode :: (Int, Extensive mv) -> DotNode String
-makeNode ni = DotNode (nodeId ni) []
+-- TODO
+actionLabel :: (Show mv) => Node () mv -> String
+actionLabel n = case nodeAction n of
+    Decision i -> show i
+    Chance d -> "Chance " ++ show d
+    Payoff (ByPlayer ps) -> "Payoff " ++ show ps
 
-edgeId :: (Int, Extensive mv) -> (Int, Extensive mv) -> String
+nodeLabel :: (Show mv) => (Extensive mv, Int) -> String
+nodeLabel ((Discrete n _), i)= show i ++ ": " ++ actionLabel n
+
+makeNode :: (Show mv) => (Extensive mv, Int) -> DotNode String
+makeNode ni = DotNode (nodeId ni) [toLabel (nodeLabel ni)]
+
+edgeId :: (Extensive mv, Int) -> (Extensive mv, Int) -> String
 edgeId n1 n2 = (nodeId n1) ++ " -> " ++ (nodeId n2)
 
-makeEdge :: (Int, Extensive mv) -> (Int, Extensive mv) -> DotEdge String
-makeEdge n1 n2 = DotEdge (nodeId n1) (nodeId n2) [toLabel (edgeId n1 n2)]
+-- TODO: What if multiple moves go to the same target node?
+edgeLabel :: (Eq mv, Show mv) => (Extensive mv, Int) -> (Extensive mv, Int) -> String
+edgeLabel ((Discrete _ es), _) (t, _) = show $ edgeMove e
+    where
+        e = head $ filter ((== t) . edgeDest) es
 
-makeEdges :: (Eq mv) => [(Int, Extensive mv)] -> (Int, Extensive mv) -> [DotEdge String]
+makeEdge :: (Eq mv, Show mv) => (Extensive mv, Int) -> (Extensive mv, Int) -> DotEdge String
+makeEdge n1 n2 = DotEdge (nodeId n1) (nodeId n2) [toLabel (edgeLabel n1 n2)]
+
+makeEdges :: (Eq mv, Show mv) => [(Extensive mv, Int)] -> (Extensive mv, Int) -> [DotEdge String]
 makeEdges nis ni = map (makeEdge ni) (nodesFrom nis ni)
 
-extensiveToDot :: (Eq mv) => Extensive mv -> DotGraph String
+extensiveToDot :: (Eq mv, Show mv) => Extensive mv -> DotGraph String
 extensiveToDot g = DotGraph { strictGraph = False
                             , directedGraph = True
                             , graphID = Nothing
