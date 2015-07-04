@@ -22,13 +22,6 @@ extensiveNodes = nub . bfs
 zipWithIndex :: [a] -> [(a, Int)]
 zipWithIndex = (`zip` [0..])
 
---extensiveEdge :: Extensive mv -> ExtEdge mv -> (Extensive mv, Extensive mv)
---extensiveEdge n (_, n') = (n, n')
-
---extensiveEdges :: Extensive mv -> [(Extensive mv, Extensive mv)]
---extensiveEdges (Discrete _ []) = []
---extensiveEdges n@(Discrete a es) = map (n `extensiveEdge`) es
-
 edgesFrom :: forall mv . (Eq mv)
           => [(Extensive mv, Int)]
           -> (Extensive mv, Int)
@@ -42,7 +35,6 @@ edgesFrom nis n@((Discrete _ es), _) = map edgepair es
 nodeId :: (Extensive mv, Int) -> String
 nodeId = show . snd
 
--- TODO
 actionLabel :: (Show mv) => Node () mv -> String
 actionLabel n = case nodeAction n of
     Decision i -> show i
@@ -58,14 +50,11 @@ makeNode ni = DotNode (nodeId ni) [toLabel (nodeLabel ni)]
 edgeId :: (Extensive mv, Int) -> (Extensive mv, Int) -> String
 edgeId n1 n2 = (nodeId n1) ++ " -> " ++ (nodeId n2)
 
--- TODO: What if multiple moves go to the same target node?
-edgeLabel :: (Eq mv, Show mv) => (Extensive mv, Int) -> (Extensive mv, Int) -> String
-edgeLabel ((Discrete _ es), _) (t, _) = show $ edgeMove e
-    where
-        e = head $ filter ((== t) . edgeDest) es
+edgeLabel :: (Eq mv, Show mv) => ((Extensive mv, Int), mv, (Extensive mv, Int)) -> String
+edgeLabel (_, a, _) = show a
 
 makeEdge :: (Eq mv, Show mv) => ((Extensive mv, Int), mv, (Extensive mv, Int)) -> DotEdge String
-makeEdge (n1, a, n2) = DotEdge (nodeId n1) (nodeId n2) [toLabel (show a)]
+makeEdge e@(n1, a, n2) = DotEdge (nodeId n1) (nodeId n2) [toLabel (edgeLabel e)]
 
 makeEdges :: (Eq mv, Show mv) => [(Extensive mv, Int)] -> (Extensive mv, Int) -> [DotEdge String]
 makeEdges nis ni = map makeEdge (edgesFrom nis ni)
