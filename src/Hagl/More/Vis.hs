@@ -3,7 +3,8 @@
 module Hagl.More.Vis where
 
 import Data.Maybe (fromMaybe)
-import Data.List (nub)
+import Data.List (nub
+                , intercalate)
 
 import Hagl
 
@@ -21,19 +22,22 @@ extensiveNodes = nub . bfs
 zipWithIndex :: [a] -> [(a, Int)]
 zipWithIndex = (`zip` [0..])
 
-extensiveEdge :: Extensive mv -> ExtEdge mv -> (Extensive mv, Extensive mv)
-extensiveEdge n (_, n') = (n, n')
+--extensiveEdge :: Extensive mv -> ExtEdge mv -> (Extensive mv, Extensive mv)
+--extensiveEdge n (_, n') = (n, n')
 
-extensiveEdges :: Extensive mv -> [(Extensive mv, Extensive mv)]
-extensiveEdges (Discrete _ []) = []
-extensiveEdges n@(Discrete a es) = map (n `extensiveEdge`) es
+--extensiveEdges :: Extensive mv -> [(Extensive mv, Extensive mv)]
+--extensiveEdges (Discrete _ []) = []
+--extensiveEdges n@(Discrete a es) = map (n `extensiveEdge`) es
 
-nodesFrom :: forall mv . (Eq mv) => [(Extensive mv, Int)] -> (Extensive mv, Int) -> [(Extensive mv, Int)]
-nodesFrom _ ((Discrete _ []), _) = []
-nodesFrom nis ((Discrete _ es), _) = map (index . snd) es
+edgesFrom :: forall mv . (Eq mv)
+          => [(Extensive mv, Int)]
+          -> (Extensive mv, Int)
+          -> [((Extensive mv, Int), mv, (Extensive mv, Int))]
+edgesFrom _ ((Discrete _ []), _) = []
+edgesFrom nis n@((Discrete _ es), _) = map edgepair es
     where
-        index :: Extensive mv -> (Extensive mv, Int)
-        index n = (n, fromMaybe (-1) (lookup n nis))
+        edgepair :: (mv, Extensive mv) -> ((Extensive mv, Int), mv, (Extensive mv, Int))
+        edgepair (a, n') = (n, a, (n', fromMaybe (-1) (lookup n' nis)))
 
 nodeId :: (Extensive mv, Int) -> String
 nodeId = show . snd
@@ -42,11 +46,11 @@ nodeId = show . snd
 actionLabel :: (Show mv) => Node () mv -> String
 actionLabel n = case nodeAction n of
     Decision i -> show i
-    Chance d -> "Chance " ++ show d
-    Payoff (ByPlayer ps) -> "Payoff " ++ show ps
+    Chance d -> "Chance " ++ intercalate "\n" (map show d)
+    Payoff (ByPlayer ps) -> show ps
 
 nodeLabel :: (Show mv) => (Extensive mv, Int) -> String
-nodeLabel ((Discrete n _), i)= show i ++ ": " ++ actionLabel n
+nodeLabel ((Discrete n _), i)= actionLabel n
 
 makeNode :: (Show mv) => (Extensive mv, Int) -> DotNode String
 makeNode ni = DotNode (nodeId ni) [toLabel (nodeLabel ni)]
@@ -60,11 +64,11 @@ edgeLabel ((Discrete _ es), _) (t, _) = show $ edgeMove e
     where
         e = head $ filter ((== t) . edgeDest) es
 
-makeEdge :: (Eq mv, Show mv) => (Extensive mv, Int) -> (Extensive mv, Int) -> DotEdge String
-makeEdge n1 n2 = DotEdge (nodeId n1) (nodeId n2) [toLabel (edgeLabel n1 n2)]
+makeEdge :: (Eq mv, Show mv) => ((Extensive mv, Int), mv, (Extensive mv, Int)) -> DotEdge String
+makeEdge (n1, a, n2) = DotEdge (nodeId n1) (nodeId n2) [toLabel (show a)]
 
 makeEdges :: (Eq mv, Show mv) => [(Extensive mv, Int)] -> (Extensive mv, Int) -> [DotEdge String]
-makeEdges nis ni = map (makeEdge ni) (nodesFrom nis ni)
+makeEdges nis ni = map makeEdge (edgesFrom nis ni)
 
 extensiveToDot :: (Eq mv, Show mv) => Extensive mv -> DotGraph String
 extensiveToDot g = DotGraph { strictGraph = False
