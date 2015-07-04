@@ -3,6 +3,7 @@
 module Hagl.More.Vis where
 
 import Data.Maybe (fromMaybe)
+import Data.List (nub)
 
 import Hagl
 
@@ -14,8 +15,8 @@ import Data.GraphViz.Commands
 -- TODO: Remove!
 import Hagl.Examples.Crisis
 
-extensiveNodes :: Extensive mv -> [Extensive mv]
-extensiveNodes = bfs
+extensiveNodes :: (Eq mv) => Extensive mv -> [Extensive mv]
+extensiveNodes = nub . bfs
 
 zipWithIndex :: [a] -> [(a, Int)]
 zipWithIndex = (`zip` [0..])
