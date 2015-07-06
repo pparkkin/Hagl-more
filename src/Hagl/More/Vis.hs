@@ -45,7 +45,7 @@ edgesFrom :: forall mv . (Eq mv)
           => [(Extensive mv, Int)]
           -> (Extensive mv, Int)
           -> [((Extensive mv, Int), mv, (Extensive mv, Int))]
-edgesFrom _ ((Discrete _ []), _) = []
+edgesFrom _ (Discrete _ [], _) = []
 edgesFrom nis n = map edgepair $ dtreeEdges (fst n)
     where
         edgepair :: (mv, Extensive mv) -> ((Extensive mv, Int), mv, (Extensive mv, Int))
