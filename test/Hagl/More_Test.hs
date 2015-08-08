@@ -5,7 +5,8 @@ import Test.HUnit
 import Test.Framework.Providers.HUnit
 
 import Hagl
-import Hagl.More
+import Hagl.More.DominantStrategy
+import Hagl.More.PureStrategies
 
 haglMoreTests = [
    testCase "Pure strategies in prisoners' dilemma for player 1" testPDPSP1
