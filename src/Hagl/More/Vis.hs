@@ -11,48 +11,38 @@ import Hagl
 import Data.GraphViz
 import Data.GraphViz.Attributes
 
-extensiveNodes :: (Eq mv) => Extensive mv -> [Extensive mv]
-extensiveNodes = nub . bfs
+type VisNode mv = ([mv], Extensive mv)
+type VisEdge mv = (VisNode mv, VisNode mv)
 
-zipWithIndex :: [a] -> [(a, Int)]
-zipWithIndex = (`zip` [0..])
-
-nodeId :: (Extensive mv, Int) -> String
-nodeId = show . snd
-
-actionLabel :: (Show mv) => Node () mv -> String
-actionLabel n = case nodeAction n of
-    Decision i -> show i
-    Chance d -> "Chance\n" ++ intercalate "\n" (map show d)
-    Payoff (ByPlayer ps) -> show ps
-
-nodeLabel :: (Show mv) => (Extensive mv, Int) -> String
-nodeLabel = actionLabel . dtreeNode . fst
-
-makeNode :: (Show mv) => (Extensive mv, Int) -> DotNode String
-makeNode ni = DotNode (nodeId ni) [toLabel (nodeLabel ni)]
-
-edgeLabel :: (Eq mv, Show mv) => ((Extensive mv, Int), mv, (Extensive mv, Int)) -> String
-edgeLabel (_, a, _) = show a
-
-makeEdge :: (Eq mv, Show mv) => ((Extensive mv, Int), mv, (Extensive mv, Int)) -> DotEdge String
-makeEdge e@(n1, a, n2) = DotEdge (nodeId n1) (nodeId n2) [toLabel (edgeLabel e)]
-
-tagNode :: (Eq mv) => [(Extensive mv, Int)] -> Extensive mv -> (Extensive mv, Int)
-tagNode nis n = (n, fromMaybe (-1) (lookup n nis))
-
-edgesFrom :: forall mv . (Eq mv)
-          => [(Extensive mv, Int)]
-          -> (Extensive mv, Int)
-          -> [((Extensive mv, Int), mv, (Extensive mv, Int))]
-edgesFrom _ (Discrete _ [], _) = []
-edgesFrom nis n = map edgepair $ dtreeEdges (fst n)
+visNodes :: Extensive mv -> [VisNode mv]
+visNodes t = nodes [] t
     where
-        edgepair :: (mv, Extensive mv) -> ((Extensive mv, Int), mv, (Extensive mv, Int))
-        edgepair (a, n') = (n, a, tagNode nis n')
+        nodes p t = (p, t) : concatMap (followEdge p) (dtreeEdges t)
+        followEdge p (m, t) = nodes (m : p) t
 
-makeEdges :: (Eq mv, Show mv) => [(Extensive mv, Int)] -> (Extensive mv, Int) -> [DotEdge String]
-makeEdges nis ni = map makeEdge (edgesFrom nis ni)
+visEdges :: (Eq mv) => Extensive mv -> [VisEdge mv]
+visEdges t = [(a, b) | a <- visNodes t
+                     , b <- visNodes t
+                     , a `edge` b]
+    where
+        edge (as, _) (_:bs, _) = as == bs
+        edge _ _ = False
+
+nodeId :: (Show mv) => VisNode mv -> String
+nodeId (ms, _) = concat $ map show ms
+
+toDotNode :: (Show mv) => VisNode mv -> DotNode String
+toDotNode n@(ms, t) = DotNode (nodeId n) [toLabel (nodeLabel t)]
+    where
+        nodeLabel = actionLabel . nodeAction . dtreeNode
+        actionLabel (Decision i) = show i
+        actionLabel (Chance d) = "Chance\n" ++ intercalate "\n" (map show d)
+        actionLabel (Payoff (ByPlayer ps)) = show ps
+
+toDotEdge :: (Show mv) => VisEdge mv -> DotEdge String
+toDotEdge e@(na, nb) = DotEdge (nodeId na) (nodeId nb) [toLabel (edgeLabel e)]
+    where
+        edgeLabel (_, (ms, _)) = show $ head ms
 
 extensiveToDot :: (Eq mv, Show mv) => Extensive mv -> DotGraph String
 extensiveToDot g = DotGraph { strictGraph = False
@@ -63,13 +53,7 @@ extensiveToDot g = DotGraph { strictGraph = False
                                                          , nodeStmts = nodes
                                                          , edgeStmts = edges }}
     where
-        ns = zipWithIndex $ extensiveNodes g
-        nodes = map makeNode ns
-        edges = concatMap (makeEdges ns) ns
+        nodes = map toDotNode (visNodes g)
+        edges = map toDotEdge (visEdges g)
 
--- For example
--- TODO: Remove!
---import Hagl.Examples.Crisis
---import Data.GraphViz.Commands
---let generateTestPng = runGraphviz (extensiveToDot crisis) Png "test.png"
 
